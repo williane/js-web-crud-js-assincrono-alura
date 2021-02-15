@@ -1,7 +1,7 @@
-import { clienteService } from "../service/client-service.js"
+import { clienteService } from "../service/client-service.js";
 
 const criarNovaLinha = (nome, email, id) => {
-  const linhaNovoCliente = document.createElement("tr")
+  const linhaNovoCliente = document.createElement("tr");
   const conteudo = ` <td class="td" data-td>${nome}</td>
       <td>${email}</td>
       <td>
@@ -9,30 +9,43 @@ const criarNovaLinha = (nome, email, id) => {
               <li><a href="../telas/edita_cliente.html?id=${id}" class="botao-simples botao-simples--editar">Editar</a></li>
               <li><button class="botao-simples botao-simples--excluir" type="button">Excluir</button></li>
           </ul>
-      </td>`
+      </td>`;
 
-  linhaNovoCliente.innerHTML = conteudo
-  linhaNovoCliente.dataset.id = id
-  return linhaNovoCliente
+  linhaNovoCliente.innerHTML = conteudo;
+  linhaNovoCliente.dataset.id = id;
+  return linhaNovoCliente;
 };
 
 const tabela = document.querySelector("[data-tabela]");
 
-tabela.addEventListener("click", (evento) => {
-  let ehBotaoDeletar = evento.target.className === 'botao-simples botao-simples--excluir'
-  if(ehBotaoDeletar){
-    const linhaCliente = evento.target.closest('[data-id]')
-    let id = linhaCliente.dataset.id
-    clienteService.removeCliente(id).then(()=>{
-      linhaCliente.remove()
-    })
+tabela.addEventListener("click", async (evento) => {
+  let ehBotaoDeletar =
+    evento.target.className === "botao-simples botao-simples--excluir";
+  if (ehBotaoDeletar) {
+    try {
+      const linhaCliente = evento.target.closest("[data-id]");
+      let id = linhaCliente.dataset.id;
+      await clienteService.removeCliente(id);
+      linhaCliente.remove();
+    } catch (erro) {
+      console.log(erro);
+      window.location.href = "../telas/erro.html";
+    }
   }
 });
 
-clienteService.listaClientes().then((data) => {
-  data.forEach((elemento) => {
-    tabela.appendChild(
-      criarNovaLinha(elemento.nome, elemento.email, elemento.id)
-    );
-  });
-});
+const render = async () => {
+  try {
+    const clientService = await clienteService.listaClientes();
+    clientService.forEach((elemento) => {
+      tabela.appendChild(
+        criarNovaLinha(elemento.nome, elemento.email, elemento.id)
+      );
+    });
+  } catch (erro) {
+    console.log(erro);
+    window.location.href = "../telas/erro.html";
+  }
+};
+
+render();
